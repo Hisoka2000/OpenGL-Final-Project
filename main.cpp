@@ -1,4 +1,4 @@
-#include "libs.h"
+﻿#include "libs.h"
 
 const float pi = 3.14159265;
 const float toRadians = 3.14159265f / 180.0f;
@@ -66,146 +66,39 @@ void CreateTriangle()
 	meshList.push_back(obj1);
 }
 
-void CreateStrip()
+void CreateStrip(int hVertices, int ​vVertices, float size)
 {
-	GLuint indices[] = { 0, 4, 1, 5, 2, 6, 3, 7, 0, 4};
+	GLuint indices[] = {0, 4, 1, 5, 2, 6, 3, 7,
+						7, 4,
+						4, 8, 5, 9, 6, 10, 7, 11,
+						11, 8,
+						8, 12, 9, 13, 10, 14, 11, 15};
 
 	GLfloat vertices[] = {
-		-0.5f,  0.5f, 0.0f,
-		 -0.5f,  -0.5f, 0.0f,
-		 0.5f, -0.5f, 0.0f,
-		 0.5f, 0.5f, 0.0f,
+		0.0f,		0.0f,		0.0f,
+		size,		0.0f,		0.0f,
+		2 * size,	0.0f,		0.0f,
+		3 * size,	0.0f,		0.0f,
 
-		-0.5f,  0.5f, -0.5f,
-		 -0.5f,  -0.5f, -0.5f,
-		 0.5f, -0.5f, -0.5f,
-		 0.5f, 0.5f, -0.5f,
+		0.0f,		-size,		0.0f,
+		size,		-size,		0.0f,
+		2 * size,	-size,		0.0f,
+		3 * size,	-size,		0.0f,
+
+		0.0f,		-2 * size,	0.0f,
+		size,		-2 * size,	0.0f,
+		2 * size,	-2 * size,	0.0f,
+		3 * size,	-2 * size,	0.0f,
+
+		0.0f,		-3 * size,	0.0f,
+		size,		-3 * size,	0.0f,
+		2 * size,	-3 * size,	0.0f,
+		3 * size,	-3 * size,	0.0f,
 	};
 
 	Mesh* obj1 = new Mesh(GL_TRIANGLE_STRIP);
-	obj1->CreateMesh(vertices, indices, 24, 10);
+	obj1->CreateMesh(vertices, indices, 48, 28);
 	meshList.push_back(obj1);
-}
-
-void CreateFanCircle(GLfloat xCenter, GLfloat yCenter, GLfloat zCenter, GLfloat radius, GLint numberOfSectors)
-{
-	int numberOfVertices = numberOfSectors + 2;
-
-	GLfloat twicePi = 2.0f * pi;
-
-	std::vector<GLfloat> circleVerticesX(numberOfVertices);
-	std::vector<GLfloat> circleVerticesY(numberOfVertices);
-	std::vector<GLfloat> circleVerticesZ(numberOfVertices);
-
-	circleVerticesX[0] = xCenter;
-	circleVerticesY[0] = yCenter;
-	circleVerticesZ[0] = zCenter;
-
-	for (int i = 1; i < numberOfVertices; i++)
-	{
-		circleVerticesX[i] = xCenter + (radius * cos(i * twicePi / numberOfSectors));
-		circleVerticesY[i] = yCenter + (radius * sin(i * twicePi / numberOfSectors));
-		circleVerticesZ[i] = zCenter;
-	}
-
-	GLfloat* vertices = new GLfloat[(numberOfVertices) * 3];
-
-	for (int i = 0; i < numberOfVertices; i++)
-	{
-		vertices[i * 3] = circleVerticesX[i];
-		vertices[(i * 3) + 1] = circleVerticesY[i];
-		vertices[(i * 3) + 2] = circleVerticesZ[i];
-	}
-
-	GLuint* indices = new GLuint[numberOfVertices];
-	for (int i = 0; i < numberOfVertices; i++)
-	{
-		indices[i] = i;
-	}
-
-	Mesh* obj1 = new Mesh(GL_TRIANGLE_FAN);
-	obj1->CreateMesh(vertices, indices, numberOfVertices * 3, numberOfVertices);
-	meshList.push_back(obj1);
-}
-
-void CreateCylinder(GLfloat xCenter, GLfloat yCenter, GLfloat zCenter, GLfloat radius, GLint numberOfSectors)
-{
-	int numberOfVertices = numberOfSectors + 2;
-
-	GLfloat twicePi = 2.0f * pi;
-
-	std::vector<GLfloat> circleVerticesX(numberOfVertices);
-	std::vector<GLfloat> circleVerticesY(numberOfVertices);
-	std::vector<GLfloat> circleVerticesZ(numberOfVertices);
-
-	circleVerticesX[0] = xCenter;
-	circleVerticesY[0] = yCenter;
-	circleVerticesZ[0] = zCenter;
-
-	for (int i = 1; i < numberOfVertices; i++)
-	{
-		circleVerticesX[i] = xCenter + (radius * cos(i * twicePi / numberOfSectors));
-		circleVerticesY[i] = yCenter + (radius * sin(i * twicePi / numberOfSectors));
-		circleVerticesZ[i] = zCenter;
-	}
-
-	GLfloat* vertices = new GLfloat[(numberOfVertices) * 3];
-
-	for (int i = 0; i < numberOfVertices; i++)
-	{
-		vertices[i * 3] = circleVerticesX[i];
-		vertices[(i * 3) + 1] = circleVerticesY[i];
-		vertices[(i * 3) + 2] = circleVerticesZ[i];
-	}
-
-	GLuint* indices = new GLuint[numberOfVertices];
-	for (int i = 0; i < numberOfVertices; i++)
-	{
-		indices[i] = i;
-	}
-
-	Mesh* obj1 = new Mesh(GL_TRIANGLE_FAN);
-	obj1->CreateMesh(vertices, indices, numberOfVertices * 3, numberOfVertices);
-	meshList.push_back(obj1);
-
-	GLfloat* stripVertices = new GLfloat[(numberOfVertices - 1) * 3 * 2];
-
-	for (int i = 0; i < (numberOfVertices - 1) * 3; i+=3)
-	{
-		stripVertices[i] = vertices[i + 3];
-		stripVertices[i + 1] = vertices[i + 4];
-		stripVertices[i + 2] = vertices[i + 5];
-	}
-
-	for (int i = 0; i < numberOfVertices * 3; i+=3)
-	{
-		vertices[i + 2] -= 1.0f;
-	}
-
-	Mesh* obj2 = new Mesh(GL_TRIANGLE_FAN);
-	obj2->CreateMesh(vertices, indices, numberOfVertices * 3, numberOfVertices);
-	meshList.push_back(obj2);
-
-
-	int index = 0;
-	for (int i = (numberOfVertices - 1) * 3; i < (numberOfVertices - 1) * 3 * 2; i++)
-	{
-		stripVertices[i] = vertices[index + 3];
-		index++;
-	}
-
-	GLuint* stripIndices = new GLuint[(numberOfVertices - 1) * 2];
-	int number = 0;
-	for (int i = 0; i < (numberOfVertices - 1) * 2; i += 2)
-	{
-		stripIndices[i] = number;
-		stripIndices[i + 1] = (numberOfVertices - 1) + number;
-		number++;
-	}
-
-	Mesh* obj3 = new Mesh(GL_TRIANGLE_STRIP);
-	obj3->CreateMesh(stripVertices, stripIndices, numberOfVertices * 2 * 3 - 6, numberOfVertices * 2 - 2);
-	meshList.push_back(obj3);
 }
 
 void CreateShaders()
@@ -217,20 +110,10 @@ void CreateShaders()
 
 int main()
 {
-	//Taking Variables
-	int numberOfSectors = 100;
-	float radius = 0.5f;
-	float modelRotation = 90.0f;
-	std::cout << "If you want you can press 'z' inside the window to switch to wireframe mode \n";
-	std::cout << "Type in the number of sectors for the cylinder: ";
-	std::cin >> numberOfSectors;
-	std::cout << "Type in the radius for the base of the cylinder: ";
-	std::cin >> radius;
-
 	mainWindow = Window(1600, 1200);
 	mainWindow.Initialise();
 
-	CreateCylinder(0.0f, 0.0f, 0.0f, radius, numberOfSectors);
+	CreateStrip(4, 4, 0.5f);
 
 	CreateShaders();
 
@@ -242,11 +125,6 @@ int main()
 	// Loop until window closed
 	while (!mainWindow.getShouldClose())
 	{
-		/*rotation += 1;
-		if (rotation >= 360)
-		{
-			rotation = 0.0f;
-		}*/
 
 		GLfloat now = glfwGetTime();
 		deltaTime = now - lastTime;
@@ -276,26 +154,19 @@ int main()
 		glm::mat4 model;
 
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, modelRotation * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, 90.0f * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
 		meshList[0]->RenderMesh();
 
-		model = glm::mat4();
+		/*model = glm::mat4();
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, modelRotation * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		meshList[1]->RenderMesh();
-
-		model = glm::mat4();
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, modelRotation * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		meshList[2]->RenderMesh();
+		meshList[1]->RenderMesh();*/
 
 		glUseProgram(0);
 
