@@ -8,6 +8,8 @@ std::vector<Mesh*> meshList;
 std::vector<Shader> shaderList;
 Camera camera;
 
+Texture waterTexture;
+
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
 
@@ -55,14 +57,14 @@ void CreateTriangle()
 	};
 
 	GLfloat vertices[] = {
-		-1.0f, -1.0f, 0.0f,
-		 1.0f, -1.0f, 1.0f,
-		 1.0f, -1.0f, 0.0f,
-		 0.0f, 1.0f, 0.0f
+		-1.0f, -1.0f, 0.0f,		0.0f,	0.0f,
+		 1.0f, -1.0f, 1.0f,		0.5f,	0.0f,
+		 1.0f, -1.0f, 0.0f,		1.0f,	0.0f,
+		 0.0f, 1.0f, 0.0f,		0.5f,	1.0f
 	};
 
 	Mesh* obj1 = new Mesh(GL_TRIANGLES);
-	obj1->CreateMesh(vertices, indices, 12, 12);
+	obj1->CreateMesh(vertices, indices, 20, 12);
 	meshList.push_back(obj1);
 }
 
@@ -75,29 +77,30 @@ void CreateStrip(int hVertices, int ​vVertices, float size)
 						8, 12, 9, 13, 10, 14, 11, 15};
 
 	GLfloat vertices[] = {
-		0.0f,		0.0f,		0.0f,
-		size,		0.0f,		0.0f,
-		2 * size,	0.0f,		0.0f,
-		3 * size,	0.0f,		0.0f,
+		//x			y			z			u		v
+		0.0f,		0.0f,		0.0f,		0.0f,	1.0f,
+		size,		0.0f,		0.0f,		0.33f,	1.0f,
+		2 * size,	0.0f,		0.0f,		0.66f,	1.0f,
+		3 * size,	0.0f,		0.0f,		1.0f,	1.0f,
 
-		0.0f,		-size,		0.0f,
-		size,		-size,		0.0f,
-		2 * size,	-size,		0.0f,
-		3 * size,	-size,		0.0f,
+		0.0f,		-size,		0.0f,		0.0f,	0.66f,
+		size,		-size,		0.0f,		0.33f,	0.66f,
+		2 * size,	-size,		0.0f,		0.66f,	0.66f,
+		3 * size,	-size,		0.0f,		1.0f,	0.66f,
 
-		0.0f,		-2 * size,	0.0f,
-		size,		-2 * size,	0.0f,
-		2 * size,	-2 * size,	0.0f,
-		3 * size,	-2 * size,	0.0f,
+		0.0f,		-2 * size,	0.0f,		0.0f,	0.33f,
+		size,		-2 * size,	0.0f,		0.33f,	0.33f,
+		2 * size,	-2 * size,	0.0f,		0.66f,	0.33f,
+		3 * size,	-2 * size,	0.0f,		1.0f,	0.33f,
 
-		0.0f,		-3 * size,	0.0f,
-		size,		-3 * size,	0.0f,
-		2 * size,	-3 * size,	0.0f,
-		3 * size,	-3 * size,	0.0f,
+		0.0f,		-3 * size,	0.0f,		0.0f,	0.0f,
+		size,		-3 * size,	0.0f,		0.33f,	0.0f,
+		2 * size,	-3 * size,	0.0f,		0.66f,	0.0f,
+		3 * size,	-3 * size,	0.0f,		1.0f,	0.0f
 	};
 
 	Mesh* obj1 = new Mesh(GL_TRIANGLE_STRIP);
-	obj1->CreateMesh(vertices, indices, 48, 28);
+	obj1->CreateMesh(vertices, indices, 80, 28);
 	meshList.push_back(obj1);
 }
 
@@ -119,7 +122,10 @@ int main()
 
 	camera = Camera(glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 180.0f, 90.0f, 3.0f, 0.2f);
 
-	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0;
+	waterTexture = Texture((char*)("Textures/water.png"));
+	waterTexture.LoadTexture();
+
+	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, uniformUvScroll = 0;
 	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 100.0f);
 
 	// Loop until window closed
@@ -150,6 +156,8 @@ int main()
 		uniformProjection = shaderList[0].GetProjectionLocation();
 		uniformView = shaderList[0].GetViewLocation();
 
+		uniformUvScroll = shaderList[0].GetUvScrollLocation();
+		glUniform1f(uniformUvScroll, glfwGetTime());
 
 		glm::mat4 model;
 
@@ -159,6 +167,7 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
+		waterTexture.UseTexture();
 		meshList[0]->RenderMesh();
 
 		/*model = glm::mat4();

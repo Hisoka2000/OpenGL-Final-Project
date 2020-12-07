@@ -1,5 +1,7 @@
 #pragma once
 
+#define STB_IMAGE_IMPLEMENTATION
+
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
@@ -21,3 +23,4 @@
 #include "Window.h"
 #include "Shader.h"
 #include "Camera.h"
+#include "Texture.h"
