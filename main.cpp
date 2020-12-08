@@ -70,37 +70,109 @@ void CreateTriangle()
 
 void CreateStrip(int hVertices, int ​vVertices, float size)
 {
-	GLuint indices[] = {0, 4, 1, 5, 2, 6, 3, 7,
+	/*GLuint indices[] = {0, 4, 1, 5, 2, 6, 3, 7,
 						7, 4,
 						4, 8, 5, 9, 6, 10, 7, 11,
 						11, 8,
-						8, 12, 9, 13, 10, 14, 11, 15};
+						8, 12, 9, 13, 10, 14, 11, 15};*/
 
-	GLfloat vertices[] = {
-		//x			y			z			u		v
-		0.0f,		0.0f,		0.0f,		0.0f,	1.0f,
-		size,		0.0f,		0.0f,		0.33f,	1.0f,
-		2 * size,	0.0f,		0.0f,		0.66f,	1.0f,
-		3 * size,	0.0f,		0.0f,		1.0f,	1.0f,
+	GLuint* indices = new GLuint[2 * hVertices * (​vVertices - 1) + 2 * (​vVertices - 2)];
 
-		0.0f,		-size,		0.0f,		0.0f,	0.66f,
-		size,		-size,		0.0f,		0.33f,	0.66f,
-		2 * size,	-size,		0.0f,		0.66f,	0.66f,
-		3 * size,	-size,		0.0f,		1.0f,	0.66f,
+	//Setting the odd numbered indices
+	int number = 0;
+	int hIndex = 0;
+	for (int i = 0; i < 2 * hVertices * (​vVertices - 1) + 2 * (​vVertices - 2); i+=2)
+	{
+		indices[i] = number;
+		number++;
 
-		0.0f,		-2 * size,	0.0f,		0.0f,	0.33f,
-		size,		-2 * size,	0.0f,		0.33f,	0.33f,
-		2 * size,	-2 * size,	0.0f,		0.66f,	0.33f,
-		3 * size,	-2 * size,	0.0f,		1.0f,	0.33f,
+		if (hIndex == 2 * hVertices - 2)
+		{
+			i += 2;
+			hIndex = 0;
+			continue;
+		}
 
-		0.0f,		-3 * size,	0.0f,		0.0f,	0.0f,
-		size,		-3 * size,	0.0f,		0.33f,	0.0f,
-		2 * size,	-3 * size,	0.0f,		0.66f,	0.0f,
-		3 * size,	-3 * size,	0.0f,		1.0f,	0.0f
-	};
+		hIndex += 2;
+	}
+
+	//Setting the even numbered indices
+	number = hVertices;
+	hIndex = 1;
+	for (int i = 1; i < 2 * hVertices * (​vVertices - 1) + 2 * (​vVertices - 2); i += 2)
+	{
+		indices[i] = number;
+		number++;
+
+		if (hIndex == 2 * hVertices - 1)
+		{
+			i += 2;
+			hIndex = 1;
+			continue;
+		}
+
+		hIndex += 2;
+	}
+
+	//Setting the connecting indices
+	number = 0;
+	for (int i = hVertices * 2; i < 2 * hVertices * (​vVertices - 1) + 2 * (​vVertices - 2); i += hVertices * 2 + 2)
+	{
+		indices[i] = hVertices * 2 - 1 + (number * ​vVertices);
+		indices[i + 1] = hVertices + (number * ​vVertices);
+		number++;
+	}
+
+	//GLfloat vertices[] = {
+	//	//x			y			z			u		v
+	//	0.0f,		0.0f,		0.0f,		0.0f,	1.0f,
+	//	size,		0.0f,		0.0f,		0.33f,	1.0f,
+	//	2 * size,	0.0f,		0.0f,		0.66f,	1.0f,
+	//	3 * size,	0.0f,		0.0f,		1.0f,	1.0f,
+
+	//	0.0f,		-size,		0.0f,		0.0f,	0.66f,
+	//	size,		-size,		0.0f,		0.33f,	0.66f,
+	//	2 * size,	-size,		0.0f,		0.66f,	0.66f,
+	//	3 * size,	-size,		0.0f,		1.0f,	0.66f,
+
+	//	0.0f,		-2 * size,	0.0f,		0.0f,	0.33f,
+	//	size,		-2 * size,	0.0f,		0.33f,	0.33f,
+	//	2 * size,	-2 * size,	0.0f,		0.66f,	0.33f,
+	//	3 * size,	-2 * size,	0.0f,		1.0f,	0.33f,
+
+	//	0.0f,		-3 * size,	0.0f,		0.0f,	0.0f,
+	//	size,		-3 * size,	0.0f,		0.33f,	0.0f,
+	//	2 * size,	-3 * size,	0.0f,		0.66f,	0.0f,
+	//	3 * size,	-3 * size,	0.0f,		1.0f,	0.0f
+	//};
+
+	GLfloat* vertices = new GLfloat[hVertices * ​vVertices * 5];
+	int xMultiplier = 0;
+	int yMultiplier = 0;
+	float uIncrement = 0.0f;
+	float vIncrement = 1.0f;
+	for (int i = 0; i < hVertices * ​vVertices * 5; i += 5)
+	{
+		vertices[i] = xMultiplier * size;
+		vertices[i + 1] = yMultiplier * (-size);
+		vertices[i + 2] = 0;
+		vertices[i + 3] = uIncrement;
+		vertices[i + 4] = vIncrement;
+
+		xMultiplier++;
+		uIncrement += (1.0f / (hVertices - 1));
+
+		if (xMultiplier == hVertices)
+		{
+			xMultiplier = 0;
+			yMultiplier++;
+			uIncrement = 0.0f;
+			vIncrement -= (1.0f / (​vVertices - 1));
+		}
+	}
 
 	Mesh* obj1 = new Mesh(GL_TRIANGLE_STRIP);
-	obj1->CreateMesh(vertices, indices, 80, 28);
+	obj1->CreateMesh(vertices, indices, hVertices * ​vVertices * 5, 2 * hVertices * (​vVertices - 1) + 2 * (​vVertices - 2));
 	meshList.push_back(obj1);
 }
 
@@ -116,7 +188,7 @@ int main()
 	mainWindow = Window(1600, 1200);
 	mainWindow.Initialise();
 
-	CreateStrip(4, 4, 0.5f);
+	CreateStrip(6, 6, 0.5f);
 
 	CreateShaders();
 
@@ -157,7 +229,7 @@ int main()
 		uniformView = shaderList[0].GetViewLocation();
 
 		uniformUvScroll = shaderList[0].GetUvScrollLocation();
-		glUniform1f(uniformUvScroll, glfwGetTime());
+		glUniform1f(uniformUvScroll, glfwGetTime() / 2.5);
 
 		glm::mat4 model;
 
