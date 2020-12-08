@@ -24,6 +24,9 @@ static const char* vShader = "Shaders/shader.vert";
 // Fragment Shader
 static const char* fShader = "Shaders/shader.frag";
 
+// Geometry Shader
+static const char* gShader = "Shaders/shader.geom";
+
 void keyInputUpdate(GLfloat& inputUpdateTime)
 {
 	//If enough time has passed to read a key input
@@ -179,16 +182,23 @@ void CreateStrip(int hVertices, int ​vVertices, float size)
 void CreateShaders()
 {
 	Shader* shader1 = new Shader();
-	shader1->CreateFromFiles(vShader, fShader);
+	shader1->CreateFromFiles(vShader, fShader, gShader);
 	shaderList.push_back(*shader1);
 }
 
 int main()
 {
+	int hVert;
+	int vVert;
+	std::cout << "Enter the number of horizontal vertices: ";
+	std::cin >> hVert;
+	std::cout << "Enter the number of vertical vertices: ";
+	std::cin >> vVert;
+
 	mainWindow = Window(1600, 1200);
 	mainWindow.Initialise();
 
-	CreateStrip(100, 100, 0.5f);
+	CreateStrip(hVert, vVert, 0.5f);
 
 	CreateShaders();
 

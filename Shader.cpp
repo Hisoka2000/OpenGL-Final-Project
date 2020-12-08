@@ -7,19 +7,21 @@ Shader::Shader()
 	uniformProjection = 0;
 }
 
-void Shader::CreateFromString(const char* vertexCode, const char* fragmentCode)
+void Shader::CreateFromString(const char* vertexCode, const char* fragmentCode, const char* geometryCode)
 {
-	CompileShader(vertexCode, fragmentCode);
+	CompileShader(vertexCode, fragmentCode, geometryCode);
 }
 
-void Shader::CreateFromFiles(const char* vertexLocation, const char* fragmentLocation)
+void Shader::CreateFromFiles(const char* vertexLocation, const char* fragmentLocation, const char* geometryLocation)
 {
 	std::string vertexString = ReadFile(vertexLocation);
 	std::string fragmentString = ReadFile(fragmentLocation);
+	std::string geometryString = ReadFile(geometryLocation);
 	const char* vertexCode = vertexString.c_str();
 	const char* fragmentCode = fragmentString.c_str();
+	const char* geometryCode = geometryString.c_str();
 
-	CompileShader(vertexCode, fragmentCode);
+	CompileShader(vertexCode, fragmentCode, geometryCode);
 }
 
 std::string Shader::ReadFile(const char* fileLocation)
@@ -43,7 +45,7 @@ std::string Shader::ReadFile(const char* fileLocation)
 	return content;
 }
 
-void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
+void Shader::CompileShader(const char* vertexCode, const char* fragmentCode, const char* geometryCode)
 {
 	shaderID = glCreateProgram();
 
@@ -55,6 +57,7 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
 
 	AddShader(shaderID, vertexCode, GL_VERTEX_SHADER);
 	AddShader(shaderID, fragmentCode, GL_FRAGMENT_SHADER);
+	AddShader(shaderID, geometryCode, GL_GEOMETRY_SHADER);
 
 	GLint result = 0;
 	GLchar eLog[1024] = { 0 };
