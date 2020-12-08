@@ -25,3 +25,4 @@
 #include "Camera.h"
 #include "Texture.h"
 #include "Light.h"
+#include "Material.h"

@@ -10,6 +10,8 @@ Camera camera;
 
 Texture waterTexture;
 
+Material waterMaterial;
+
 Light mainLight;
 
 GLfloat deltaTime = 0.0f;
@@ -256,11 +258,14 @@ int main()
 	waterTexture = Texture((char*)("Textures/water.png"));
 	waterTexture.LoadTexture();
 
+	waterMaterial = Material(1.0f, 64);
+
 	mainLight = Light(1.0f, 1.0f, 1.0f, 0.7f, 
 					0.5, 0.5f, 0.5f, 1.0f);
 
-	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, uniformUvScroll = 0, 
-		uniformAmbientIntensity = 0, uniformAmbientColour = 0, uniformDirection = 0, uniformDiffuseIntensity = 0;
+	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, uniformUvScroll = 0, uniformEyePosition = 0,
+		uniformAmbientIntensity = 0, uniformAmbientColour = 0, uniformDirection = 0, uniformDiffuseIntensity = 0,
+		uniformSpecularIntensity = 0, uniformShininess = 0;
 	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 100.0f);
 
 	// Loop until window closed
@@ -294,11 +299,18 @@ int main()
 		uniformAmbientIntensity = shaderList[0].GetAmbientIntensityLocation();
 		uniformDirection = shaderList[0].GetDirectionLocation();
 		uniformDiffuseIntensity = shaderList[0].GetDiffuseIntensityLocation();
+		uniformEyePosition = shaderList[0].GetEyePositionLocation();
+		uniformSpecularIntensity = shaderList[0].GetSpecularIntensityLocation();
+		uniformShininess = shaderList[0].GetShininessLocation();
 
 		uniformUvScroll = shaderList[0].GetUvScrollLocation();
 		glUniform1f(uniformUvScroll, glfwGetTime() / 2.5);
 
 		mainLight.UseLight(uniformAmbientIntensity, uniformAmbientColour, uniformDiffuseIntensity, uniformDirection);
+
+		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
+		glUniform3f(uniformEyePosition, camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
 
 		glm::mat4 model;
 
@@ -306,9 +318,8 @@ int main()
 		model = glm::rotate(model, 90.0f * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
-		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
 		waterTexture.UseTexture();
+		waterMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		meshList[0]->RenderMesh();
 
 		/*model = glm::mat4();
