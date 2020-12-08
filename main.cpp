@@ -10,6 +10,8 @@ Camera camera;
 
 Texture waterTexture;
 
+Light mainLight;
+
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
 
@@ -207,7 +209,9 @@ int main()
 	waterTexture = Texture((char*)("Textures/water.png"));
 	waterTexture.LoadTexture();
 
-	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, uniformUvScroll = 0;
+	mainLight = Light(1.0f, 1.0f, 1.0f, 0.3f);
+
+	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, uniformUvScroll = 0, uniformAmbientIntensity = 0, uniformAmbientColour = 0;
 	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 100.0f);
 
 	// Loop until window closed
@@ -237,9 +241,13 @@ int main()
 		uniformModel = shaderList[0].GetModelLocation();
 		uniformProjection = shaderList[0].GetProjectionLocation();
 		uniformView = shaderList[0].GetViewLocation();
+		uniformAmbientColour = shaderList[0].GetAmbientColourLocation();
+		uniformAmbientIntensity = shaderList[0].GetAmbientIntensityLocation();
 
 		uniformUvScroll = shaderList[0].GetUvScrollLocation();
 		glUniform1f(uniformUvScroll, glfwGetTime() / 2.5);
+
+		mainLight.UseLight(uniformAmbientIntensity, uniformAmbientColour);
 
 		glm::mat4 model;
 
