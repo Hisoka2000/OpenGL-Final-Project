@@ -118,8 +118,8 @@ void CreateStrip(int hVertices, int ​vVertices, float size)
 	number = 0;
 	for (int i = hVertices * 2; i < 2 * hVertices * (​vVertices - 1) + 2 * (​vVertices - 2); i += hVertices * 2 + 2)
 	{
-		indices[i] = hVertices * 2 - 1 + (number * ​vVertices);
-		indices[i + 1] = hVertices + (number * ​vVertices);
+		indices[i] = hVertices * 2 - 1 + (number * hVertices);
+		indices[i + 1] = hVertices + (number * hVertices);
 		number++;
 	}
 
@@ -188,7 +188,7 @@ int main()
 	mainWindow = Window(1600, 1200);
 	mainWindow.Initialise();
 
-	CreateStrip(6, 6, 0.5f);
+	CreateStrip(100, 100, 0.5f);
 
 	CreateShaders();
 
