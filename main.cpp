@@ -29,6 +29,44 @@ static const char* fShader = "Shaders/shader.frag";
 // Geometry Shader
 static const char* gShader = "Shaders/shader.geom";
 
+void calculateAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat* vertices, unsigned int verticeCount, 
+							unsigned int vLength, unsigned int normalOffset, int hVertices)
+{
+	int counter = 0;
+	for (size_t i = 0; i < indiceCount; i++)
+	{
+		unsigned int in0 = indices[i] * vLength;
+		unsigned int in1 = indices[i + 1] * vLength;
+		unsigned int in2 = indices[i + 2] * vLength;
+		glm::vec3 v1(vertices[in1] - vertices[in0], vertices[in1 + 1] - vertices[in0 + 1], vertices[in1 + 2] - vertices[in0 + 2]);
+		glm::vec3 v2(vertices[in2] - vertices[in0], vertices[in2 + 1] - vertices[in0 + 1], vertices[in2 + 2] - vertices[in0 + 2]);
+		glm::vec3 normal = glm::cross(v1, v2);
+		normal = glm::normalize(normal);
+
+		in0 += normalOffset; in1 += normalOffset; in2 += normalOffset;
+		vertices[in0] += normal.x; vertices[in0 + 1] += normal.y; vertices[in0 + 2] += normal.z;
+		vertices[in1] += normal.x; vertices[in1 + 1] += normal.y; vertices[in1 + 2] += normal.z;
+		vertices[in2] += normal.x; vertices[in2 + 1] += normal.y; vertices[in2 + 2] += normal.z;
+
+		if (counter == 2 * hVertices - 3)
+		{
+			counter = 0;
+			i += 4;
+			continue;
+		}
+
+		counter++;
+	}
+
+	for (size_t i = 0; i < verticeCount / vLength; i++)
+	{
+		unsigned int nOffset = i * vLength + normalOffset;
+		glm::vec3 vec(vertices[nOffset], vertices[nOffset + 1], vertices[nOffset + 2]);
+		vec = glm::normalize(vec);
+		vertices[nOffset] = vec.x; vertices[nOffset + 1] = vec.y; vertices[nOffset + 2] = vec.z;
+	}
+}
+
 void keyInputUpdate(GLfloat& inputUpdateTime)
 {
 	//If enough time has passed to read a key input
@@ -62,14 +100,17 @@ void CreateTriangle()
 	};
 
 	GLfloat vertices[] = {
-		-1.0f, -1.0f, 0.0f,		0.0f,	0.0f,
-		 1.0f, -1.0f, 1.0f,		0.5f,	0.0f,
-		 1.0f, -1.0f, 0.0f,		1.0f,	0.0f,
-		 0.0f, 1.0f, 0.0f,		0.5f,	1.0f
+		//	x      y      z			u	  v			nx	  ny    nz
+			-1.0f, -1.0f, 0.0f,		0.0f, 0.0f,		0.0f, 0.0f, 0.0f,
+			0.0f, -1.0f, 1.0f,		0.5f, 0.0f,		0.0f, 0.0f, 0.0f,
+			1.0f, -1.0f, 0.0f,		1.0f, 0.0f,		0.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, 0.0f,		0.5f, 1.0f,		0.0f, 0.0f, 0.0f
 	};
 
-	Mesh* obj1 = new Mesh(GL_TRIANGLES);
-	obj1->CreateMesh(vertices, indices, 20, 12);
+	//calculateAverageNormals(indices, 12, vertices, 32, 8, 5);
+
+	Mesh* obj1 = new Mesh(GL_TRIANGLE_STRIP);
+	obj1->CreateMesh(vertices, indices, 32, 12);
 	meshList.push_back(obj1);
 }
 
@@ -129,40 +170,43 @@ void CreateStrip(int hVertices, int ​vVertices, float size)
 	}
 
 	//GLfloat vertices[] = {
-	//	//x			y			z			u		v
-	//	0.0f,		0.0f,		0.0f,		0.0f,	1.0f,
-	//	size,		0.0f,		0.0f,		0.33f,	1.0f,
-	//	2 * size,	0.0f,		0.0f,		0.66f,	1.0f,
-	//	3 * size,	0.0f,		0.0f,		1.0f,	1.0f,
+	//	//x			y			z			u		v			normalX		normalY		normalZ
+	//	0.0f,		0.0f,		0.0f,		0.0f,	1.0f,		0.0f,		0.0f,		0.0f,
+	//	size,		0.0f,		0.0f,		0.33f,	1.0f,		0.0f,		0.0f,		0.0f,
+	//	2 * size,	0.0f,		0.0f,		0.66f,	1.0f,		0.0f,		0.0f,		0.0f,
+	//	3 * size,	0.0f,		0.0f,		1.0f,	1.0f,		0.0f,		0.0f,		0.0f,
+	
+	//	0.0f,		-size,		0.0f,		0.0f,	0.66f,		0.0f,		0.0f,		0.0f,
+	//	size,		-size,		0.0f,		0.33f,	0.66f,		0.0f,		0.0f,		0.0f,
+	//	2 * size,	-size,		0.0f,		0.66f,	0.66f,		0.0f,		0.0f,		0.0f,
+	//	3 * size,	-size,		0.0f,		1.0f,	0.66f,		0.0f,		0.0f,		0.0f,
 
-	//	0.0f,		-size,		0.0f,		0.0f,	0.66f,
-	//	size,		-size,		0.0f,		0.33f,	0.66f,
-	//	2 * size,	-size,		0.0f,		0.66f,	0.66f,
-	//	3 * size,	-size,		0.0f,		1.0f,	0.66f,
+	//	0.0f,		-2 * size,	0.0f,		0.0f,	0.33f,		0.0f,		0.0f,		0.0f,
+	//	size,		-2 * size,	0.0f,		0.33f,	0.33f,		0.0f,		0.0f,		0.0f,
+	//	2 * size,	-2 * size,	0.0f,		0.66f,	0.33f,		0.0f,		0.0f,		0.0f,
+	//	3 * size,	-2 * size,	0.0f,		1.0f,	0.33f,		0.0f,		0.0f,		0.0f,
 
-	//	0.0f,		-2 * size,	0.0f,		0.0f,	0.33f,
-	//	size,		-2 * size,	0.0f,		0.33f,	0.33f,
-	//	2 * size,	-2 * size,	0.0f,		0.66f,	0.33f,
-	//	3 * size,	-2 * size,	0.0f,		1.0f,	0.33f,
-
-	//	0.0f,		-3 * size,	0.0f,		0.0f,	0.0f,
-	//	size,		-3 * size,	0.0f,		0.33f,	0.0f,
-	//	2 * size,	-3 * size,	0.0f,		0.66f,	0.0f,
-	//	3 * size,	-3 * size,	0.0f,		1.0f,	0.0f
+	//	0.0f,		-3 * size,	0.0f,		0.0f,	0.0f,		0.0f,		0.0f,		0.0f,
+	//	size,		-3 * size,	0.0f,		0.33f,	0.0f,		0.0f,		0.0f,		0.0f,
+	//	2 * size,	-3 * size,	0.0f,		0.66f,	0.0f,		0.0f,		0.0f,		0.0f,
+	//	3 * size,	-3 * size,	0.0f,		1.0f,	0.0f,		0.0f,		0.0f,		0.0f
 	//};
 
-	GLfloat* vertices = new GLfloat[hVertices * ​vVertices * 5];
+	GLfloat* vertices = new GLfloat[hVertices * ​vVertices * 8];
 	int xMultiplier = 0;
 	int yMultiplier = 0;
 	float uIncrement = 0.0f;
 	float vIncrement = 1.0f;
-	for (int i = 0; i < hVertices * ​vVertices * 5; i += 5)
+	for (int i = 0; i < hVertices * ​vVertices * 8; i += 8)
 	{
-		vertices[i] = xMultiplier * size;
-		vertices[i + 1] = yMultiplier * (-size);
-		vertices[i + 2] = 0;
-		vertices[i + 3] = uIncrement;
-		vertices[i + 4] = vIncrement;
+		vertices[i] = xMultiplier * size;				//x
+		vertices[i + 1] = yMultiplier * (-size);		//y
+		vertices[i + 2] = 0;							//z
+		vertices[i + 3] = uIncrement;					//u
+		vertices[i + 4] = vIncrement;					//v
+		vertices[i + 5] = 0.0f;							//normalX
+		vertices[i + 6] = 0.0f;							//normalY
+		vertices[i + 7] = 0.0f;							//normalZ
 
 		xMultiplier++;
 		uIncrement += (1.0f / (hVertices - 1));
@@ -176,8 +220,10 @@ void CreateStrip(int hVertices, int ​vVertices, float size)
 		}
 	}
 
+	calculateAverageNormals(indices, 2 * hVertices * (​vVertices - 1) + 2 * (​vVertices - 2), vertices, hVertices * ​vVertices * 8, 8, 5, hVertices);
+
 	Mesh* obj1 = new Mesh(GL_TRIANGLE_STRIP);
-	obj1->CreateMesh(vertices, indices, hVertices * ​vVertices * 5, 2 * hVertices * (​vVertices - 1) + 2 * (​vVertices - 2));
+	obj1->CreateMesh(vertices, indices, hVertices * ​vVertices * 8, 2 * hVertices * (​vVertices - 1) + 2 * (​vVertices - 2));
 	meshList.push_back(obj1);
 }
 
@@ -201,6 +247,7 @@ int main()
 	mainWindow.Initialise();
 
 	CreateStrip(hVert, vVert, 0.5f);
+	//CreateTriangle();
 
 	CreateShaders();
 
@@ -209,9 +256,11 @@ int main()
 	waterTexture = Texture((char*)("Textures/water.png"));
 	waterTexture.LoadTexture();
 
-	mainLight = Light(1.0f, 1.0f, 1.0f, 0.3f);
+	mainLight = Light(1.0f, 1.0f, 1.0f, 0.7f, 
+					0.5, 0.5f, 0.5f, 1.0f);
 
-	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, uniformUvScroll = 0, uniformAmbientIntensity = 0, uniformAmbientColour = 0;
+	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, uniformUvScroll = 0, 
+		uniformAmbientIntensity = 0, uniformAmbientColour = 0, uniformDirection = 0, uniformDiffuseIntensity = 0;
 	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 100.0f);
 
 	// Loop until window closed
@@ -243,11 +292,13 @@ int main()
 		uniformView = shaderList[0].GetViewLocation();
 		uniformAmbientColour = shaderList[0].GetAmbientColourLocation();
 		uniformAmbientIntensity = shaderList[0].GetAmbientIntensityLocation();
+		uniformDirection = shaderList[0].GetDirectionLocation();
+		uniformDiffuseIntensity = shaderList[0].GetDiffuseIntensityLocation();
 
 		uniformUvScroll = shaderList[0].GetUvScrollLocation();
 		glUniform1f(uniformUvScroll, glfwGetTime() / 2.5);
 
-		mainLight.UseLight(uniformAmbientIntensity, uniformAmbientColour);
+		mainLight.UseLight(uniformAmbientIntensity, uniformAmbientColour, uniformDiffuseIntensity, uniformDirection);
 
 		glm::mat4 model;
 
